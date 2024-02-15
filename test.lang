@@ -1,0 +1,4 @@
+pushs "Hello, Mom!";
+puts;
+pushi 0;
+exit;
