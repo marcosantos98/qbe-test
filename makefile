@@ -7,6 +7,5 @@ all:
 run: all
 	./build/qbe-test ./test.lang
 	qbe -o ./build/output.s ./build/output.ssa
-	as -o ./build/output.o ./build/output.s
-	$(CC) -o ./build/main ./build/output.o
-	@rm -rf ./build/output.o ./build/output.ssa ./build/output.s
+	$(CC) -o ./build/main ./build/output.s
+	@rm -rf ./build/output.ssa ./build/output.s
