@@ -1,4 +1,6 @@
 pushs "Hello, Mom!";
 puts;
 pushi 0;
+pushi 19;
+plusi;
 exit;

@@ -34,6 +34,7 @@ struct Stack {
 enum class OPType {
     NOP = 0,
     PUSHI,
+    PLUSI,
     PUSHS,
     INTRINSIC
 };
@@ -53,6 +54,8 @@ struct OP {
 
 #define OP_PUSH_I(op) \
     OP { OPType::PUSHI, op }
+#define OP_PLUS_I \
+    OP { OPType::PLUSI }
 #define OP_PUSH_S(sop) \
     OP { OPType::PUSHS, 0, sop }
 #define OP_INTRINSIC(intrinsic) \
@@ -76,6 +79,8 @@ std::string opTypeToName(const OP &op) {
     switch (op.type) {
     case OPType::PUSHI:
         return "OPType::PUSHI";
+    case OPType::PLUSI:
+        return "OPType::PLUSI";
     case OPType::PUSHS:
         return "OPType::PUSHS";
     case OPType::INTRINSIC:
@@ -168,6 +173,8 @@ void parseProgram(const std::string &source) {
                     current = INTRINSIC_PUTS;
                 } else if (res.first == "pushi") {
                     current.type = OPType::PUSHI;
+                } else if (res.first == "plusi") {
+                    current.type = OPType::PLUSI;
                 } else if (res.first == "exit") {
                     current = INTRINSIC_EXIT;
                 }
@@ -199,6 +206,11 @@ void genQBEIR() {
         case OPType::PUSHI:
             stack.push(op.operand);
             break;
+        case OPType::PLUSI: {
+            auto a = stack.pop();
+            auto b = stack.pop();
+            stack.push(a + b);
+        } break;
         case OPType::PUSHS:
             stack.pushs(op.soperand);
             break;
