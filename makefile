@@ -1,8 +1,8 @@
-CC=clang++
+CC=clang
 
 all:
 	@mkdir -p build
-	$(CC) main.cpp -o ./build/qbe-test
+	$(CC) -I./cutils -Werror -Wall -Wextra main.c -o ./build/qbe-test
 
 run: all
 	./build/qbe-test ./test.lang
