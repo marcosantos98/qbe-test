@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "strb.h"
 #include "vector.h"
 
 #define MAX_STACK 100
@@ -233,27 +234,12 @@ void parseProgram(str source) {
     }
 }
 
-typedef struct {
-    char *data;
-    int cnt;
-    int cap;
-} strb;
-
-void strbAppend(strb *strb, const char *data) {
-    size_t n = strlen(data);
-    size_t i = 0;
-    while (i < n) {
-        VEC_ADD(strb, data[i]);
-        i++;
-    }
-}
-
 void genQBEIR() {
-    strb data = {0};
-    strb main = {0};
+    strb data = strb_init(16);
+    strb main = strb_init(16);
 
-    strbAppend(&main, "export function w $main() {\n");
-    strbAppend(&main, "@start\n");
+    strb_append(&main, "export function w $main() {\n");
+    strb_append(&main, "@start\n");
 
     Stack stack = {0};
 
@@ -278,23 +264,23 @@ void genQBEIR() {
             switch (op.operand) {
             case PUTS: {
                 str s = stack_pops(&stack);
-                strbAppend(&data, "data $str");
+                strb_append(&data, "data $str");
                 snprintf(buf, 32, "%d", strCnt);
-                strbAppend(&data, buf);
-                strbAppend(&data, " = { b  \"");
-                strbAppend(&data, s.data);
-                strbAppend(&data, "\", b 0}\n");
-                strbAppend(&main, "   %r =w call $puts(l $str");
+                strb_append(&data, buf);
+                strb_append(&data, " = { b  \"");
+                strb_append(&data, s.data);
+                strb_append(&data, "\", b 0}\n");
+                strb_append(&main, "   %r =w call $puts(l $str");
                 snprintf(buf, 32, "%d", strCnt++);
-                strbAppend(&main, buf);
-                strbAppend(&main, ")\n");
+                strb_append(&main, buf);
+                strb_append(&main, ")\n");
             } break;
             case EXIT: {
                 int e = stack_pop(&stack);
-                strbAppend(&main, "   %r =w call $exit(l ");
+                strb_append(&main, "   %r =w call $exit(l ");
                 snprintf(buf, 32, "%d", e);
-                strbAppend(&main, buf);
-                strbAppend(&main, ")\n");
+                strb_append(&main, buf);
+                strb_append(&main, ")\n");
             } break;
             default:
                 printf("Not implemented yet: %s\n", opTypeToName(op));
@@ -309,18 +295,18 @@ void genQBEIR() {
         }
     }
 
-    strbAppend(&main, "   ret 0\n");
-    strbAppend(&main, "}\n");
+    strb_append(&main, "   ret 0\n");
+    strb_append(&main, "}\n");
 
-    strbAppend(&data, "\n");
-    strbAppend(&data, main.data);
+    strb_append(&data, "\n");
+    strb_append(&data, main.str);
 
     FILE *out = fopen("./build/output.ssa", "w");
-    fwrite(data.data, sizeof(char), data.cnt, out);
+    fwrite(data.str, sizeof(char), data.cnt, out);
     fclose(out);
 
-    VEC_FREE(data);
-    VEC_FREE(main);
+    strb_free(data);
+    strb_free(main);
 }
 
 void readFile(const char *path, str *buf) {
